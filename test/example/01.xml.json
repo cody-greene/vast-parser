@@ -1,0 +1,37 @@
+{
+  "version": "3.0",
+  "ads": [
+    {
+      "id": "123abc",
+      "system": "MyAdSystem",
+      "title": "preroll number 1",
+      "sequence": 1,
+      "errors": ["https://tmp.test/pixel?type=error"],
+      "impressions": ["https://tmp.test/pixel?type=impression"],
+      "surveys": [],
+      "creatives": [
+        {
+          "linear": {
+            "duration": 15000,
+            "tracking": {
+              "complete": ["https://tmp.test/pixel?type=complete"],
+              "firstQuartile": ["https://tmp.test/pixel?type=1q"],
+              "midpoint": ["https://tmp.test/pixel?type=2q"],
+              "thirdQuartile": ["https://tmp.test/pixel?type=3q"],
+              "click": ["https://tmp.test/pixel?type=click"]
+            },
+            "files": [
+              {
+                "type": "application/mp4",
+                "uri": "https://tmp.test/video/00.mp4",
+                "delivery": "progressive",
+                "width": 1280,
+                "height": 720
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

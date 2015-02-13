@@ -1,0 +1,46 @@
+<VAST version="3.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast.xsd">
+  <Ad id="123abc" sequence="1">
+    <InLine>
+      <AdSystem>MyAdSystem</AdSystem>
+      <AdTitle>preroll number 1</AdTitle>
+      <Error>
+        <![CDATA[ https://tmp.test/pixel?type=error ]]>
+      </Error>
+      <Impression id="iii111">
+        <![CDATA[ https://tmp.test/pixel?type=impression ]]>
+      </Impression>
+      <Creatives>
+        <Creative>
+          <Linear>
+            <Duration>00:00:15</Duration>
+            <TrackingEvents>
+              <Tracking event="complete">
+                <![CDATA[ https://tmp.test/pixel?type=complete ]]>
+              </Tracking>
+              <Tracking event="firstQuartile">
+                <![CDATA[ https://tmp.test/pixel?type=1q ]]>
+              </Tracking>
+              <Tracking event="midpoint">
+                <![CDATA[ https://tmp.test/pixel?type=2q ]]>
+              </Tracking>
+              <Tracking event="thirdQuartile">
+                <![CDATA[ https://tmp.test/pixel?type=3q ]]>
+              </Tracking>
+            </TrackingEvents>
+            <VideoClicks>
+              <ClickTracking id="kkk1000">
+                <![CDATA[ https://tmp.test/pixel?type=click ]]>
+              </ClickTracking>
+            </VideoClicks>
+            <MediaFiles>
+              <MediaFile type="application/mp4" delivery="progressive" width="1280" height="720">
+                <![CDATA[ https://tmp.test/video/00.mp4 ]]>
+              </MediaFile>
+            </MediaFiles>
+          </Linear>
+        </Creative>
+      </Creatives>
+    </InLine>
+  </Ad>
+</VAST>
