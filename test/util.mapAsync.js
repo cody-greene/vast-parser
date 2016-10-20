@@ -2,11 +2,11 @@
 /* global describe, it, before, after, beforeEach, afterEach *//*jshint ignore:line*/
 
 var assert = require('assert')
-var Parser = require('../parser')
+var util = require('../src/util')
 
-describe('Parser.settle()', function () {
+describe('util.mapAsync()', function () {
   it('should add values to the response object', function () {
-    Parser.settle(['myval'], function iterator(item, nextItem) {
+    util.mapAsync(['myval'], function iterator(item, nextItem) {
       nextItem(null, item)
     }, function done(acc) {
       assert.deepEqual(acc, [{err: null, val: 'myval'}])
@@ -14,7 +14,7 @@ describe('Parser.settle()', function () {
   })
 
   it('should add errors to the response object', function () {
-    Parser.settle(['myval'], function iterator(item, nextItem) {
+    util.mapAsync(['myval'], function iterator(item, nextItem) {
       nextItem('FAKE_ERR', null)
     }, function done(acc) {
       assert.deepEqual(acc, [{err: 'FAKE_ERR', val: null}])
@@ -22,7 +22,7 @@ describe('Parser.settle()', function () {
   })
 
   it('should return the async-task results in order', function (next) {
-    Parser.settle([
+    util.mapAsync([
       {delay: 40, val: 1},
       {delay: 20, val: 2},
       {delay: 10, val: 3},
@@ -43,17 +43,17 @@ describe('Parser.settle()', function () {
   })
 
   it('should invoke the iterator with context', function () {
-    Parser.settle([], function iterator(item, nextItem) {
-      assert.strictEqual(this, Parser)
+    util.mapAsync([], function iterator(item, nextItem) {
+      assert.strictEqual(this, util)
       nextItem()
     }, function noop() {})
   })
 
   it('should invoke the callback with context', function () {
-    Parser.settle([], function (item, nextItem) {
+    util.mapAsync([], function (item, nextItem) {
       nextItem()
     }, function done() {
-      assert.strictEqual(this, Parser)
+      assert.strictEqual(this, util)
     })
   })
 })

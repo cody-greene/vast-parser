@@ -2,7 +2,7 @@
 /* global describe, it, before, after, beforeEach, afterEach *//*jshint ignore:line*/
 
 var assert = require('assert')
-var vast = require('../vast')
+var vast = require('../src/vast')
 var createDOM = require('./util/mock-dom')
 
 describe('vast.parseDuration()', function () {

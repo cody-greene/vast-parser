@@ -1,0 +1,12 @@
+- adpod bucket vs stand-alone bucket
+- parseCompanionAds
+- parseNonlinear
+- convert to ES2015
+- browser compatibility
+  - request()
+  - xmldom
+  - String.trim()
+  - Object.keys()
+- omit ALL falsy values from result
+- remove bunyan
+- remove lodash

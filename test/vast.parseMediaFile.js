@@ -3,7 +3,7 @@
 
 var assert = require('assert')
 var createDOM = require('./util/mock-dom')
-var parseMediaFile = require('../vast').parseMediaFile
+var parseMediaFile = require('../src/vast').parseMediaFile
   .bind({
     log: require('./util/mock-logger')
   })

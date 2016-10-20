@@ -4,7 +4,7 @@
 var assert = require('assert')
 var createDOM = require('./util/mock-dom')
 var mockAsync = require('./util/mock-async')
-var parseAd = require('../vast').parseAd
+var parseAd = require('../src/vast').parseAd
   .bind({
     log: require('./util/mock-logger'),
     parseInLine: mockAsync,

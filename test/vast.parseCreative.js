@@ -3,7 +3,7 @@
 
 var assert = require('assert')
 var createDOM = require('./util/mock-dom')
-var parseCreative = require('../vast').parseCreative
+var parseCreative = require('../src/vast').parseCreative
   .bind({
     log: require('./util/mock-logger'),
     parseLinear: function () { return {} },

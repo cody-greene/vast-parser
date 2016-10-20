@@ -4,7 +4,7 @@
 var fs = require('fs')
 var assert = require('assert')
 var server = require('./util/server')
-var Parser = require('../parser')
+var Parser = require('../src/parser')
 var tlog = require('bunyan').createLogger({
   name: 'VAST',
   streams: [{path: __dirname + '/tmp' + __filename.slice(__dirname.length, -3) + '.log', level: 'trace'}]

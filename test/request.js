@@ -5,8 +5,7 @@ var assert = require('assert')
 var zlib = require('zlib')
 var fs = require('fs')
 var server = require('./util/server')
-var getXML = require('../get')
-var easyStream = require('./util/easy-stream')
+var request = require('../src/request')
 
 function getFilePath(name) { return __dirname + '/example' + name }
 function readFile(name) { return fs.readFileSync(getFilePath(name), 'utf8') }
@@ -46,7 +45,7 @@ function router(req, res) {
   }
 }
 
-describe('getXML()', function () {
+describe('request()', function () {
   before(server.start)
   before(server.ssl.start)
   before(function () {
@@ -56,75 +55,90 @@ describe('getXML()', function () {
 
   it('should support HTTP', function (next) {
     var docname = '/00.xml'
-    easyStream(
-      getXML({url: server.url + docname}),
-      readFile(docname),
-      next
-    )
+    request({url: server.url + docname}, function (err, actual) {
+      assert.ifError(err)
+      assert.equal(actual, readFile(docname), 'XML response should match')
+      next()
+    })
   })
 
   it('should support HTTPS', function (next) {
     var docname = '/00.xml'
-    easyStream(
-      getXML({
-        url: server.ssl.url + docname,
-        ca: server.ssl._.ca,
-        headers: {host: 'tmp.test'}
-      }),
-      readFile(docname),
-      next
-    )
+    request({
+      url: server.ssl.url + docname,
+      ca: server.ssl._.ca,
+      headers: {host: 'tmp.test'}
+    }, function (err, actual) {
+      assert.ifError(err)
+      assert.equal(actual, readFile(docname), 'XML response should match')
+      next()
+    })
   })
 
   it('should support protocol-less URLs', function (next) {
     var docname = '/00.xml'
-    easyStream(getXML({
+    request({
       url: server.url.replace('http://', '') + docname
-    }), readFile(docname), next)
+    }, function (err, actual) {
+      assert.ifError(err)
+      assert.equal(actual, readFile(docname), 'XML response should match')
+      next()
+    })
   })
 
   it('should fail on an empty response', function (next) {
-    getXML({url: server.url + '/empty'})
-      .on('error', function (err) {
-        assert(err)
-        next()
-      })
+    request({url: server.url + '/empty'}, function (err) {
+      assert(err)
+      next()
+    })
   })
 
   it('should fail on a bad status code', function (next) {
-    getXML({url: server.url + '/does-not-exist.xml'})
-      .on('error', function (err) {
-        assert(err)
-        next()
-      })
+    request({url: server.url + '/does-not-exist.xml'}, function (err) {
+      assert(err)
+      next()
+    })
   })
 
   it('should support the "timeout" option', function (next) {
-    getXML({url: server.url + '/long', timeout: 25})
-      .on('error', function (err) {
-        assert(err)
-        next()
-      })
+    request({url: server.url + '/long', timeout: 25}, function (err) {
+      assert(err)
+      next()
+    })
   })
 
   it('should follow a redirect', function (next) {
-    easyStream(getXML({url: server.url + '/redirect'}), readFile('/00.xml'), next)
+    request({url: server.url + '/redirect'}, function (err, actual) {
+      assert.ifError(err)
+      assert.equal(actual, readFile('/00.xml'), 'XML response should match')
+      next()
+    })
   })
 
   it('should follow a relative redirect', function (next) {
-    easyStream(getXML({url: server.url + '/redirect-relative'}), readFile('/00.xml'), next)
+    request({url: server.url + '/redirect-relative'}, function (err, actual) {
+      assert.ifError(err)
+      assert.equal(actual, readFile('/00.xml'), 'XML response should match')
+      next()
+    })
   })
 
   it('should support the "maxRedirects" option', function (next) {
-    getXML({url: server.url + '/redirect-many', maxRedirects: 1})
-      .on('error', function (err) {
-        assert(err)
-        next()
-      })
+    request({
+      url: server.url + '/redirect-many',
+      maxRedirects: 1
+    }, function (err) {
+      assert(err)
+      next()
+    })
   })
 
   it('should decompress gzip content-encoding', function (next) {
-    easyStream(getXML({url: server.url + '/gzip'}), readFile('/00.xml'), next)
+    request({url: server.url + '/gzip'}, function (err, actual) {
+      assert.ifError(err)
+      assert.equal(actual, readFile('/00.xml'), 'XML response should match')
+      next()
+    })
   })
 
   it('should only accept "text/xml" or "application/xml" MIME types')

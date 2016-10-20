@@ -1,17 +1,13 @@
 'use strict';
-
 var fs = require('fs')
-var lodash = require('lodash')
-var ParserDOM = require('xmldom').DOMParser
-var stdlog = require('bunyan').createLogger({name: 'VAST'})
-var xmlEvents = require('./xml-events')
-var getXML = require('./get')
+var xmldom = require('xmldom')
+var stdlog = require('bunyan').createLogger({name: 'vast-parser'})
+var request = require('./request')
 var vast = require('./vast')
-
-var defaults = lodash.defaults
-var generateID = lodash.uniqueId
-var noop = lodash.noop
-var omit = lodash.omit
+var defaults = require('lodash/object/defaults')
+var generateID = require('lodash/utility/uniqueId')
+var omit = require('lodash/object/omit')
+var noop = function () {}
 var Parser = module.exports = Object.create(vast)
 
 /**
@@ -20,7 +16,7 @@ var Parser = module.exports = Object.create(vast)
  * @return {Parser} For easy chaining
  */
 Parser.init = function init(opt) {
-  this.opt = defaults(opt, {
+  opt = this.opt = defaults(opt, {
     // depth: 0,
     // parentID: null,
     headers: {},
@@ -29,19 +25,14 @@ Parser.init = function init(opt) {
     done: noop,
     autorun: true
   })
-
-  this.log = this.opt.logger.child({
+  this.log = opt.logger.child({
     // depth: this.opt.depth,
     // parentID: this.opt.parentID,
     id: generateID()
   })
-
-  this.log.debug({opt: omit(this.opt, 'logger')}, 'PARSER_INIT')
-
-  this.dom = new ParserDOM({errorHandler: this.domErrorHandler.bind(this)})
-
-  if (this.opt.autorun) this.run()
-
+  this.log.debug({opt: omit(opt, ['logger', 'ca'])}, 'PARSER_INIT')
+  this.dom = new xmldom.DOMParser({errorHandler: this.domErrorHandler.bind(this)})
+  if (opt.autorun) this.run()
   return this
 }
 
@@ -68,13 +59,9 @@ Parser.stop = function stop(err, res) {
   // Make sure this only runs once
   if (this._stopped) return this
   this._stopped = true
-
   this.log.debug('PARSER_STOP')
-
-  if (this.xml) this.xml.removeAllListeners()
-
-  try { this.opt.done(err, res) }
-  catch (callbackErr) { this.log.error(callbackErr, 'PARSER_CALLBACK_ERR') }
+  try{ this.opt.done(err, res) }
+  catch(callbackErr){ this.log.error(callbackErr, 'PARSER_CALLBACK_ERR') }
   return this
 }
 
@@ -84,23 +71,20 @@ Parser.stop = function stop(err, res) {
  */
 Parser.run = function run() {
   var opt = this.opt
-  var xmlStream
-
+  var self = this
   this.log.trace('PARSER_RUN')
-
-  if (opt.path) xmlStream = this.xml = fs.createReadStream(opt.path)
-  else if (opt.uri) xmlStream = this.xml = getXML({
+  if (opt.path) fs.readFile(opt.path, 'utf8', proceed)
+  else if (opt.uri) request({
     maxRedirects: opt.maxRedirects,
     uri: opt.uri,
     headers: opt.headers,
     ca: opt.ca
-  })
-
-  if (!xmlStream)
-    return this.stop(new Error('NO_XML_STREAM_ERR'))
-
-  xmlStream = this.registerAll(xmlEvents, xmlStream)
-
+  }, proceed)
+  else self.stop(new Error('NO_DOCUMENT_LOCATION'))
+  function proceed(err, xml) {
+    if (err) self.stop(err)
+    else self.parseDocument(self.dom.parseFromString(xml, 'text/xml'))
+  }
   return this
 }
 
@@ -117,7 +101,7 @@ Parser.domErrorHandler = function DOMErrorHandler(type, msg) {
  * @arg {object} [context] Bound as 'this' for each listener
  * @return {EventEmitter}
  */
-Parser.registerAll = function registerAll(events, emitter) {
+Parser.registerAll = function registerAll(emitter, events) {
   // jshint -W089
   for (var key in events)
     emitter.on(key, this.safeBind(events[key]))
@@ -134,21 +118,4 @@ Parser.safeBind = function safeBind(fn) {
       self.stop(err)
     }
   }
-}
-
-Parser.settle = function settle(arr, iterator, callback) {
-  var acc = []
-  var expected = arr.length
-  var count = 0
-  var self = this
-
-  function encloseNext(targetIndex) {
-    return function next(err, val) {
-      acc[targetIndex] = {err: err, val: val}
-      if (++count >= expected) callback.call(self, acc)
-    }
-  }
-
-  for (var index = 0; index < expected; ++index)
-    iterator.call(this, arr[index], encloseNext(index))
 }

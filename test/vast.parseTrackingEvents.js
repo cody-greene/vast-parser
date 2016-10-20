@@ -3,7 +3,7 @@
 
 var assert = require('assert')
 var createDOM = require('./util/mock-dom')
-var parseTrackingEvents = require('../vast').parseTrackingEvents
+var parseTrackingEvents = require('../src/vast').parseTrackingEvents
   .bind({
     log: require('./util/mock-logger')
   })
